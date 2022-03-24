@@ -1,0 +1,8 @@
+{
+  "name": "Anti Win",
+  "service": "VIP Passenger",
+  "routes": ["Yangon", "Mandalay", "Sittway", "Kyauk Phyu"],
+  "vehical_type": "Aircon Bus",
+  "phone": ["09254698745", "09254698743"],
+  "address": "Aye Yiet Nyein High Way Gate"
+}
