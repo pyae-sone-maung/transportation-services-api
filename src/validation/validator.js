@@ -2,9 +2,9 @@ const service = require("../models/transportation_serveces");
 
 const { param, body } = require("express-validator");
 
-const checkID = [param("service_id").isMongoId().withMessage("Invalid ID")];
+const validateID = [param("service_id").isMongoId().withMessage("Invalid ID")];
 
-const checkServiceData = [
+const validateServiceData = [
     body("name").not().isEmpty().trim().withMessage("Name is required."),
     body("service")
         .not()
@@ -21,4 +21,4 @@ const checkServiceData = [
     body("address").not().isEmpty().withMessage("Address is required."),
 ];
 
-module.exports = { checkID, checkServiceData };
+module.exports = { validateID, validateServiceData };
