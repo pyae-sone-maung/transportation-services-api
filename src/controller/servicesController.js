@@ -1,5 +1,6 @@
 const transportation_services = require("../models/transportation_serveces");
-const { validationResult } = require("express-validator");
+const { validationResult, check } = require("express-validator");
+const { upload } = require("../utils/files-upload");
 
 //Add new service
 const create_newService = async (req, res, next) => {
@@ -23,6 +24,7 @@ const create_newService = async (req, res, next) => {
 };
 
 // Get all resources from database
+// Allow filter, sort, page
 const show_allServices = async (req, res, next) => {
     const options = req.query;
     const filter = options.filter || {};
@@ -53,31 +55,35 @@ const show_allServices = async (req, res, next) => {
 
 // update by ID
 const update_serviceById = async (req, res, next) => {
-    const id = req.params.service_id;
+    const id = req.params.id;
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ Errors: errors });
     } else {
         try {
-            const data = await transportation_services.findById(id);
-            if (data === null) {
-                return res.status(404).json({ errors: "Id is not found" });
+            const result = await transportation_services.findById(id);
+            if (result === null) {
+                return res.status(404).json({ Errors: "Id is not found" });
             } else {
                 try {
-                    const result =
+                    const data =
                         await transportation_services.findByIdAndUpdate(
                             id,
                             { $set: req.body },
                             { multi: false, returnDocument: "after" }
                         );
-                    return res.status(200).json(result);
+                    return res.status(200).json({
+                        meta: { message: "update successfully" },
+                        data,
+                        links: { self: req.originalUrl },
+                    });
                 } catch (error) {
-                    return res.status(500).json({ errors: error });
+                    return res.status(500).json({ Errors: error });
                 }
             }
         } catch (error) {
-            return res.status(500).json({ errors: error });
+            return res.status(500).json({ Errors: error });
             next();
         }
     }
@@ -85,7 +91,7 @@ const update_serviceById = async (req, res, next) => {
 
 // delete service by ID
 const delete_serviceById = async (req, res, next) => {
-    const id = req.params.service_id;
+    const id = req.params.id;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ Errors: errors });
@@ -93,7 +99,7 @@ const delete_serviceById = async (req, res, next) => {
         try {
             const data = await transportation_services.findById(id);
             if (data === null) {
-                return res.status(404).json({ errors: "Id is not found" });
+                return res.status(404).json({ Errors: "Id is not found" });
             } else {
                 await transportation_services.findByIdAndDelete(id);
                 return res.sendStatus(204);
@@ -105,21 +111,70 @@ const delete_serviceById = async (req, res, next) => {
     }
 };
 
-// search service by name
+// search service by ID
+
+const search_serviceById = async (req, res, next) => {
+    const id = req.params.id;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ Errors: errors });
+    } else {
+        try {
+            const data = await transportation_services.findById(id);
+
+            if (data === null) {
+                return res.status(404).json({ Errors: "Id not found" });
+            } else {
+                return res
+                    .status(200)
+                    .json({ data, links: { self: req.originalUrl } });
+            }
+        } catch (error) {
+            return res.status(500).json({ Errors: error });
+        }
+    }
+};
+
+// search services by name
+// e.g: Anti Win, Mandalar, Myat Pyae Sone
+
 const search_serviceByName = async (req, res, next) => {
     const searchName = req.params.service_name;
     try {
-        const result = await transportation_services.find({ name: searchName });
-        return res
-            .status(200)
-            .json({
-                meta: { search: searchName, total: result.length },
-                result,
-                links: { self: req.originalUrl },
-            });
+        const data = await transportation_services.find({ name: searchName });
+        return res.status(200).json({
+            meta: { name: searchName, total: data.length },
+            data,
+            links: { self: req.originalUrl },
+        });
+    } catch (error) {
+        return res.status(500).json({ Errors: error });
+        next();
+    }
+};
+
+// search service by routes
+// e.g: Thadwe, Mruk U, Sittway, Yangon, Mandalay
+
+const search_serviceByRoute = async (req, res, next) => {
+    const searchRoute = req.params.route_name;
+    try {
+        const data = await transportation_services.find({
+            routes: { $in: [searchRoute] },
+        });
+        return res.status(200).json({
+            meta: { route: searchRoute, total: data.length },
+            data,
+            links: { self: req.originalUrl },
+        });
     } catch (error) {
         return res.status(500).json({ Errors: error });
     }
+};
+
+// image upload test
+const imageupload = (req, res, next) => {
+    console.log(req.file);
 };
 
 module.exports = {
@@ -127,5 +182,8 @@ module.exports = {
     show_allServices,
     update_serviceById,
     delete_serviceById,
+    search_serviceById,
     search_serviceByName,
+    search_serviceByRoute,
+    imageupload,
 };
