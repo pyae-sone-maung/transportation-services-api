@@ -1,8 +1,7 @@
 const transportation_services = require("../models/transportation_serveces");
-const { validationResult, check } = require("express-validator");
-const { upload } = require("../utils/files-upload");
+const { validationResult } = require("express-validator");
 
-//Add new service
+// Add new service
 const create_newService = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -172,11 +171,6 @@ const search_serviceByRoute = async (req, res, next) => {
     }
 };
 
-// image upload test
-const imageupload = (req, res, next) => {
-    console.log(req.file);
-};
-
 module.exports = {
     create_newService,
     show_allServices,
@@ -185,5 +179,4 @@ module.exports = {
     search_serviceById,
     search_serviceByName,
     search_serviceByRoute,
-    imageupload,
 };
