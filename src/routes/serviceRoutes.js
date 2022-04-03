@@ -2,11 +2,8 @@ const express = require("express");
 const router = express.Router();
 const serviceController = require("../controller/servicesController");
 const { validateID, validateServiceData } = require("../validation/validator");
-const { upload } = require("../utils/files-upload");
 
-// router.post("/", validateServiceData, serviceController.create_newService);
-
-router.post("/", upload.single("image"), serviceController.imageupload);
+router.post("/", validateServiceData, serviceController.create_newService);
 
 router.get("/", serviceController.show_allServices);
 
