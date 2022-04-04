@@ -1,26 +1,27 @@
 const transportation_services = require("../models/transportation_serveces");
 const { validationResult } = require("express-validator");
+const path = require("path");
 
 // Add new service
-const create_newService = async (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ Errors: errors.array() });
-    } else {
-        try {
-            const service = req.body;
-            const data = await transportation_services.insertMany(service);
-            res.append("Location", req.originalUrl + data[0]._id);
-            return res.status(201).json({
-                meta: { message: "create successfully", id: data[0]._id },
-                data,
-            });
-        } catch (error) {
-            return res.status(500);
-            next();
-        }
-    }
-};
+// const create_newService = async (req, res, next) => {
+//     const errors = validationResult(req);
+//     if (!errors.isEmpty()) {
+//         return res.status(400).json({ Errors: errors.array() });
+//     } else {
+//         try {
+//             const service = req.body;
+//             const data = await transportation_services.insertMany(service);
+//             res.append("Location", req.originalUrl + data[0]._id);
+//             return res.status(201).json({
+//                 meta: { message: "create successfully", id: data[0]._id },
+//                 data,
+//             });
+//         } catch (error) {
+//             return res.status(500);
+//             next();
+//         }
+//     }
+// };
 
 // Get all resources from database
 // Allow filter, sort, page
@@ -168,6 +169,32 @@ const search_serviceByRoute = async (req, res, next) => {
         });
     } catch (error) {
         return res.status(500).json({ Errors: error });
+    }
+};
+
+// Multer upload testing
+const create_newService = async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ Errors: errors.array() });
+    } else {
+        const file = req.file;
+        const extName = path.extname(file.originalname);
+        const allowExtension = [".jpg", ".jpeg", ".png"];
+        const limit = 3 * 1024 * 1024;
+
+        if (!allowExtension.includes(extName)) {
+            return res.status(400).json({
+                Error: "Invalid file type. Only jpg, jpeg and png formats are allowed.",
+            });
+        } else if (file.size > limit) {
+            return res.status(400).json({
+                Error: "The file size has exceeded the limit. Max allowed limit is 3 MB.",
+            });
+        } else {
+            console.log(req.body);
+            console.log(req.file.path);
+        }
     }
 };
 
