@@ -1,27 +1,114 @@
 const transportation_services = require("../models/transportation_serveces");
 const { validationResult } = require("express-validator");
+const cloudinary = require("cloudinary").v2;
 const path = require("path");
 
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET_KEY,
+});
+
 // Add new service
-// const create_newService = async (req, res, next) => {
-//     const errors = validationResult(req);
-//     if (!errors.isEmpty()) {
-//         return res.status(400).json({ Errors: errors.array() });
-//     } else {
-//         try {
-//             const service = req.body;
-//             const data = await transportation_services.insertMany(service);
-//             res.append("Location", req.originalUrl + data[0]._id);
-//             return res.status(201).json({
-//                 meta: { message: "create successfully", id: data[0]._id },
-//                 data,
-//             });
-//         } catch (error) {
-//             return res.status(500);
-//             next();
-//         }
-//     }
-// };
+const create_newService = async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ Errors: errors.array() });
+    } else {
+        const file = req.file;
+        if (!file) {
+            const serviceData = {
+                name: req.body.name,
+                service: req.body.service,
+                routes: req.body.routes.split(","),
+                vehical_type: req.body.vehical_type,
+                phone: req.body.phone.split(","),
+                address: req.body.address,
+                image: {
+                    image_id: process.env.DEFAULT_IMAGE_ID,
+                    image_url: process.env.DEFAULT_IMAGE_URL,
+                },
+            };
+            try {
+                const data = await transportation_services.insertMany(
+                    serviceData
+                );
+                res.append(
+                    "Location",
+                    req.originalUrl + "service-id/" + data[0]._id
+                );
+                return res.status(201).json({
+                    meta: { message: "create succefully" },
+                    data,
+                });
+            } catch (error) {
+                return res.status(500).json({ Error: error });
+            }
+        } else {
+            const extName = path.extname(file.originalname);
+            const allowExtension = [".jpg", ".jpeg", ".png"];
+            const fileLimit = 3 * 1024 * 1024;
+
+            // file validation
+            if (!allowExtension.includes(extName)) {
+                return res.status(400).json({
+                    Error: "Invalid file type. Only jpg, jpeg and png formats are allowed.",
+                });
+            } else if (file.size > fileLimit) {
+                return res.status(400).json({
+                    Error: "The file size has exceeded the limit. Max allowed limit is 1 MB.",
+                });
+            } else {
+                cloudinary.uploader.upload(
+                    file.path,
+                    {
+                        folder: "Taungup-City",
+                        resource_type: "image",
+                        quality: "auto",
+                        width: 1280,
+                        height: 720,
+                    },
+                    async (err, result) => {
+                        if (err) {
+                            return res.status(500).json({ Error: err });
+                        } else {
+                            const serviceData = {
+                                name: req.body.name,
+                                service: req.body.service,
+                                routes: req.body.routes.split(","),
+                                vehical_type: req.body.vehical_type,
+                                phone: req.body.phone.split(","),
+                                address: req.body.address,
+                                image: {
+                                    image_id: result.public_id,
+                                    image_url: result.url,
+                                },
+                            };
+                            try {
+                                const data =
+                                    await transportation_services.insertMany(
+                                        serviceData
+                                    );
+                                res.append(
+                                    "Location",
+                                    req.originalUrl +
+                                        "service-id/" +
+                                        data[0]._id
+                                );
+                                return res.status(201).json({
+                                    meta: { message: "create successfully" },
+                                    data,
+                                });
+                            } catch (error) {
+                                return res.status(500).json({ Error: error });
+                            }
+                        }
+                    }
+                );
+            }
+        }
+    }
+};
 
 // Get all resources from database
 // Allow filter, sort, page
@@ -169,32 +256,6 @@ const search_serviceByRoute = async (req, res, next) => {
         });
     } catch (error) {
         return res.status(500).json({ Errors: error });
-    }
-};
-
-// Multer upload testing
-const create_newService = async (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ Errors: errors.array() });
-    } else {
-        const file = req.file;
-        const extName = path.extname(file.originalname);
-        const allowExtension = [".jpg", ".jpeg", ".png"];
-        const limit = 3 * 1024 * 1024;
-
-        if (!allowExtension.includes(extName)) {
-            return res.status(400).json({
-                Error: "Invalid file type. Only jpg, jpeg and png formats are allowed.",
-            });
-        } else if (file.size > limit) {
-            return res.status(400).json({
-                Error: "The file size has exceeded the limit. Max allowed limit is 3 MB.",
-            });
-        } else {
-            console.log(req.body);
-            console.log(req.file.path);
-        }
     }
 };
 
