@@ -1,10 +1,13 @@
 const mongoose = require("mongoose");
 
 // Transportation Services Model
-const imageSchema = mongoose.Schema({
-    image_id: { type: String },
-    image_url: { type: String },
-});
+const imageSchema = mongoose.Schema(
+    {
+        image_id: { type: String },
+        image_url: { type: String },
+    },
+    { _id: false }
+);
 
 const transportation_services_Schema = mongoose.Schema(
     {
