@@ -17,8 +17,8 @@ const transportation_services_Schema = mongoose.Schema(
         vehical_type: { type: String },
         phone: [{ type: String }],
         address: { type: String },
-        Note: { type: String },
-        image: [imageSchema],
+        note: { type: String },
+        image: imageSchema,
     },
     { timestamps: true, versionKey: false }
 );
