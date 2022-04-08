@@ -1,5 +1,6 @@
 const transportation_services = require("../models/transportation_serveces");
 const { validationResult } = require("express-validator");
+const { fileValidate } = require("../validation/file-validator");
 const cloudinary = require("cloudinary").v2;
 const path = require("path");
 
@@ -16,18 +17,19 @@ const create_newService = async (req, res, next) => {
         return res.status(400).json({ Errors: errors.array() });
     } else {
         const file = req.file;
+        let serviceData = {
+            name: req.body.name,
+            service: req.body.service,
+            routes: req.body.routes.split(","),
+            vehical_type: req.body.vehical_type,
+            phone: req.body.phone.split(","),
+            address: req.body.address,
+            note: req.body.note,
+        };
         if (!file) {
-            const serviceData = {
-                name: req.body.name,
-                service: req.body.service,
-                routes: req.body.routes.split(","),
-                vehical_type: req.body.vehical_type,
-                phone: req.body.phone.split(","),
-                address: req.body.address,
-                image: {
-                    image_id: process.env.DEFAULT_IMAGE_ID,
-                    image_url: process.env.DEFAULT_IMAGE_URL,
-                },
+            serviceData.image = {
+                image_id: process.env.DEFAULT_IMAGE_ID,
+                image_url: process.env.DEFAULT_IMAGE_URL,
             };
             try {
                 const data = await transportation_services.insertMany(
@@ -45,19 +47,9 @@ const create_newService = async (req, res, next) => {
                 return res.status(500).json({ Error: error });
             }
         } else {
-            const extName = path.extname(file.originalname);
-            const allowExtension = [".jpg", ".jpeg", ".png"];
-            const fileLimit = 3 * 1024 * 1024;
-
-            // file validation
-            if (!allowExtension.includes(extName)) {
-                return res.status(400).json({
-                    Error: "Invalid file type. Only jpg, jpeg and png formats are allowed.",
-                });
-            } else if (file.size > fileLimit) {
-                return res.status(400).json({
-                    Error: "The file size has exceeded the limit. Max allowed limit is 1 MB.",
-                });
+            const checkFile = fileValidate(file); // upload file validation
+            if (checkFile !== true) {
+                return res.status(400).json({ Error: checkFile });
             } else {
                 cloudinary.uploader.upload(
                     file.path,
@@ -72,17 +64,9 @@ const create_newService = async (req, res, next) => {
                         if (err) {
                             return res.status(500).json({ Error: err });
                         } else {
-                            const serviceData = {
-                                name: req.body.name,
-                                service: req.body.service,
-                                routes: req.body.routes.split(","),
-                                vehical_type: req.body.vehical_type,
-                                phone: req.body.phone.split(","),
-                                address: req.body.address,
-                                image: {
-                                    image_id: result.public_id,
-                                    image_url: result.url,
-                                },
+                            serviceData.image = {
+                                image_id: result.public_id,
+                                image_url: result.url,
                             };
                             try {
                                 const data =
@@ -143,6 +127,7 @@ const show_allServices = async (req, res, next) => {
 // update by ID
 const update_serviceById = async (req, res, next) => {
     const id = req.params.id;
+    const file = req.file;
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -150,23 +135,82 @@ const update_serviceById = async (req, res, next) => {
     } else {
         try {
             const result = await transportation_services.findById(id);
+
+            // Existance data or user want to update data
+            const existRoutes = result.routes.toString();
+            const existPhone = result.phone.toString();
+            let updateData = {
+                name: req.body.name || result.name,
+                service: req.body.service || result.service,
+                routes: (req.body.routes || existRoutes).split(","),
+                vehical_type: req.body.vehical_type || result.vehical_type,
+                phone: (req.body.phone || existPhone).split(","),
+                address: req.body.address || result.address,
+                note: req.body.note || result.note,
+            };
             if (result === null) {
                 return res.status(404).json({ Errors: "Id is not found" });
             } else {
-                try {
-                    const data =
-                        await transportation_services.findByIdAndUpdate(
-                            id,
-                            { $set: req.body },
-                            { multi: false, returnDocument: "after" }
+                if (!file) {
+                    try {
+                        const data =
+                            await transportation_services.findByIdAndUpdate(
+                                id,
+                                { $set: updateData },
+                                { multi: false, returnDocument: "after" }
+                            );
+                        return res.status(200).json({
+                            meta: { message: "update successfully" },
+                            data,
+                            links: { self: req.originalUrl },
+                        });
+                    } catch (error) {
+                        return res.status(500).json({ Error: error });
+                    }
+                } else {
+                    const checkFile = fileValidate(file); // upload file validation
+                    if (checkFile !== true) {
+                        return res.status(400).json({ Error: checkFile });
+                    } else {
+                        cloudinary.uploader.upload(
+                            file.path,
+                            {
+                                folder: "Taungup-City",
+                                resource_type: "image",
+                                quality: "auto",
+                                width: 1280,
+                                height: 720,
+                            },
+                            async (err, result) => {
+                                if (err) {
+                                    return res.status(500).json({ Error: err });
+                                } else {
+                                    updateData.image = {
+                                        image_id: result.public_id,
+                                        image_url: result.url,
+                                    };
+                                    const data =
+                                        await transportation_services.findByIdAndUpdate(
+                                            id,
+                                            { $set: updateData },
+                                            {
+                                                multi: false,
+                                                returnDocument: "after",
+                                            }
+                                        );
+                                    return res.status(200).json({
+                                        meta: {
+                                            message: "update successfully",
+                                        },
+                                        data,
+                                        links: { self: req.originalUrl },
+                                    });
+                                }
+                            }
                         );
-                    return res.status(200).json({
-                        meta: { message: "update successfully" },
-                        data,
-                        links: { self: req.originalUrl },
-                    });
-                } catch (error) {
-                    return res.status(500).json({ Errors: error });
+                    }
+                    const existImageId = result.image.image_id;
+                    await cloudinary.uploader.destroy(existImageId);
                 }
             }
         } catch (error) {
@@ -189,6 +233,7 @@ const delete_serviceById = async (req, res, next) => {
                 return res.status(404).json({ Errors: "Id is not found" });
             } else {
                 await transportation_services.findByIdAndDelete(id);
+                await cloudinary.uploader.destroy(data.image.image_id);
                 return res.sendStatus(204);
             }
         } catch (error) {
