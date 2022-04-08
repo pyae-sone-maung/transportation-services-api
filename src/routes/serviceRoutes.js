@@ -1,9 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const serviceController = require("../controller/servicesController");
-const { validateID, validateServiceData } = require("../validation/validator");
+const {
+    validateID,
+    validateServiceData,
+} = require("../validation/req-validator");
 const { upload } = require("../utils/file-upload");
-const res = require("express/lib/response");
 
 router.post(
     "/",
@@ -16,6 +18,7 @@ router.get("/", serviceController.show_allServices);
 
 router.patch(
     "/service-id/:id",
+    upload.single("image"),
     validateID,
     serviceController.update_serviceById
 );
