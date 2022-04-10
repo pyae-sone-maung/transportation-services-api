@@ -128,6 +128,7 @@ const show_allServices = async (req, res, next) => {
 const update_serviceById = async (req, res, next) => {
     const id = req.params.id;
     const file = req.file;
+    console.log(file.path);
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -135,22 +136,21 @@ const update_serviceById = async (req, res, next) => {
     } else {
         try {
             const result = await transportation_services.findById(id);
-
-            // Existance data or user want to update data
-            const existRoutes = result.routes.toString();
-            const existPhone = result.phone.toString();
-            let updateData = {
-                name: req.body.name || result.name,
-                service: req.body.service || result.service,
-                routes: (req.body.routes || existRoutes).split(","),
-                vehical_type: req.body.vehical_type || result.vehical_type,
-                phone: (req.body.phone || existPhone).split(","),
-                address: req.body.address || result.address,
-                note: req.body.note || result.note,
-            };
             if (result === null) {
                 return res.status(404).json({ Errors: "Id is not found" });
             } else {
+                // Existance data or user want to update data
+                const existRoutes = result.routes.toString();
+                const existPhone = result.phone.toString();
+                let updateData = {
+                    name: req.body.name || result.name,
+                    service: req.body.service || result.service,
+                    routes: (req.body.routes || existRoutes).split(","),
+                    vehical_type: req.body.vehical_type || result.vehical_type,
+                    phone: (req.body.phone || existPhone).split(","),
+                    address: req.body.address || result.address,
+                    note: req.body.note || result.note,
+                };
                 if (!file) {
                     try {
                         const data =
