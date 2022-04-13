@@ -3,6 +3,7 @@ const { validationResult } = require("express-validator");
 const { fileValidate } = require("../validation/file-validator");
 const cloudinary = require("cloudinary").v2;
 const path = require("path");
+const { search } = require("../routes/serviceRoutes");
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_NAME,
@@ -270,32 +271,23 @@ const search_serviceById = async (req, res, next) => {
 // search services by name
 // e.g: Anti Win, Mandalar, Myat Pyae Sone
 
-const search_serviceByName = async (req, res, next) => {
-    const searchName = req.params.service_name;
-    try {
-        const data = await transportation_services.find({ name: searchName });
-        return res.status(200).json({
-            meta: { name: searchName, total: data.length },
-            data,
-            links: { self: req.originalUrl },
-        });
-    } catch (error) {
-        return res.status(500).json({ Errors: error });
-        next();
-    }
-};
+const advanceSearch = async (req, res, next) => {
+    const searchWords = req.params.search_words;
 
-// search service by routes
-// e.g: Thadwe, Mruk U, Sittway, Yangon, Mandalay
-
-const search_serviceByRoute = async (req, res, next) => {
-    const searchRoute = req.params.route_name;
     try {
-        const data = await transportation_services.find({
-            routes: { $in: [searchRoute] },
-        });
+        const data = await transportation_services.aggregate([
+            {
+                $search: {
+                    index: "custom_search",
+                    text: {
+                        query: searchWords,
+                        path: ["name", "routes", "service", "vehical_type"],
+                    },
+                },
+            },
+        ]);
         return res.status(200).json({
-            meta: { route: searchRoute, total: data.length },
+            meta: { search: searchWords, total: data.length },
             data,
             links: { self: req.originalUrl },
         });
@@ -310,6 +302,5 @@ module.exports = {
     update_serviceById,
     delete_serviceById,
     search_serviceById,
-    search_serviceByName,
-    search_serviceByRoute,
+    advanceSearch,
 };
