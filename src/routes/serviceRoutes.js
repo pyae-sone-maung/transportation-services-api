@@ -37,8 +37,6 @@ router.delete(
 
 router.get("/service-id/:id", validateID, serviceController.search_serviceById);
 
-router.get("/name/:service_name", serviceController.search_serviceByName);
-
-router.get("/route/:route_name", serviceController.search_serviceByRoute);
+router.get("/search/:search_words", serviceController.advanceSearch);
 
 module.exports = router;
