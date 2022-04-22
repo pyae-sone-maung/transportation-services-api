@@ -20,7 +20,7 @@ const transportation_services_Schema = mongoose.Schema(
         note: { type: String },
         image: imageSchema,
     },
-    { timestamps: true, versionKey: false }
+    { versionKey: false }
 );
 
 module.exports = mongoose.model(
