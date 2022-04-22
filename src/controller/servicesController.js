@@ -3,7 +3,6 @@ const { validationResult } = require("express-validator");
 const { fileValidate } = require("../validation/file-validator");
 const cloudinary = require("cloudinary").v2;
 const path = require("path");
-const { search } = require("../routes/serviceRoutes");
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_NAME,
@@ -12,7 +11,7 @@ cloudinary.config({
 });
 
 // Add new service
-const create_newService = async (req, res, next) => {
+const createNewService = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ Errors: errors.array() });
@@ -23,7 +22,7 @@ const create_newService = async (req, res, next) => {
             service: req.body.service,
             routes: req.body.routes.split(","),
             vehical_type: req.body.vehical_type,
-            phone: req.body.phone.split(","),
+            phone: req.body.phone.split(",") || null,
             address: req.body.address,
             note: req.body.note,
         };
@@ -95,41 +94,59 @@ const create_newService = async (req, res, next) => {
     }
 };
 
-// Get all resources from database
-// Allow filter, sort, page
-const show_allServices = async (req, res, next) => {
+// show all resources from database
+// allow filter, sort, page
+const showAllServices = async (req, res, next) => {
     const options = req.query;
     const filter = options.filter || {};
     const sort = options.sort || {};
-    const limit = 15;
+    const limit = 10;
     const page = parseInt(options.page) || 1;
     const skip = (page - 1) * limit;
     for (i in sort) {
         sort[i] = parseInt(sort[i]);
     }
 
+    // pagination
+    const paginateLinks = (totalDocs) => {
+        if (skip < totalDocs - limit) {
+            return {
+                nextPage: req.baseUrl + "?page=" + parseInt(page + 1),
+                prevPage:
+                    page == 1
+                        ? req.originalUrl
+                        : req.baseUrl + "?page=" + parseInt(page - 1),
+                lastPage:
+                    req.baseUrl + "?page=" + parseInt(totalDocs / limit + 1),
+            };
+        } else {
+            return { prevPage: req.baseUrl + "?page=" + parseInt(page - 1) };
+        }
+    };
+
     try {
+        const totalDocs = await transportation_services.count();
+        const totalPages = parseInt(totalDocs / limit) + 1;
         const data = await transportation_services
             .find(filter)
             .sort(sort)
             .skip(skip)
             .limit(limit);
         return res.status(200).json({
-            meta: { filter, sort, skip, limit, total: data.length },
+            meta: { filter, sort, skip, limit, totalPages },
             data,
-            links: { self: req.originalUrl },
+            links: paginateLinks(totalDocs),
         });
     } catch (error) {
-        return res.status(500).json({ Errors: error.array() });
+        return res.status(500).json({ Errors: error });
         next();
     }
 };
 
-// update by ID
-const update_serviceById = async (req, res, next) => {
+// update service by ID
+const updateServiceById = async (req, res, next) => {
     const id = req.params.id;
     const file = req.file;
-    console.log(file.path);
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -222,7 +239,7 @@ const update_serviceById = async (req, res, next) => {
 };
 
 // delete service by ID
-const delete_serviceById = async (req, res, next) => {
+const deleteServiceById = async (req, res, next) => {
     const id = req.params.id;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -246,7 +263,7 @@ const delete_serviceById = async (req, res, next) => {
 
 // search service by ID
 
-const search_serviceById = async (req, res, next) => {
+const getServiceById = async (req, res, next) => {
     const id = req.params.id;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -268,11 +285,12 @@ const search_serviceById = async (req, res, next) => {
     }
 };
 
-// search services by name
-// e.g: Anti Win, Mandalar, Myat Pyae Sone
-
-const advanceSearch = async (req, res, next) => {
-    const searchWords = req.params.search_words;
+// advance search
+const searchServices = async (req, res, next) => {
+    const searchWords = req.query.q;
+    const limit = 10;
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * limit;
 
     try {
         const data = await transportation_services.aggregate([
@@ -285,11 +303,44 @@ const advanceSearch = async (req, res, next) => {
                     },
                 },
             },
+            { $skip: skip },
+            { $limit: limit },
         ]);
+
+        // search paginate links
+        const searchPaginateLinks = (limit) => {
+            if (limit === data.length) {
+                return {
+                    nextPage:
+                        req.baseUrl +
+                        "/search?q=" +
+                        searchWords +
+                        "&page=" +
+                        parseInt(page + 1),
+                    prevPage:
+                        page == 1
+                            ? req.originalUrl
+                            : req.baseUrl +
+                              "/search?q=" +
+                              searchWords +
+                              "&page=" +
+                              parseInt(page - 1),
+                };
+            } else {
+                return {
+                    prevPage:
+                        req.baseUrl +
+                        "/search?q=" +
+                        searchWords +
+                        "&page=" +
+                        parseInt(page - 1),
+                };
+            }
+        };
         return res.status(200).json({
-            meta: { search: searchWords, total: data.length },
+            meta: { search: searchWords, limit, skip, page },
             data,
-            links: { self: req.originalUrl },
+            links: searchPaginateLinks(limit),
         });
     } catch (error) {
         return res.status(500).json({ Errors: error });
@@ -297,10 +348,10 @@ const advanceSearch = async (req, res, next) => {
 };
 
 module.exports = {
-    create_newService,
-    show_allServices,
-    update_serviceById,
-    delete_serviceById,
-    search_serviceById,
-    advanceSearch,
+    createNewService,
+    showAllServices,
+    updateServiceById,
+    deleteServiceById,
+    getServiceById,
+    searchServices,
 };
