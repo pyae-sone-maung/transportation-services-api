@@ -16,27 +16,28 @@ router.post(
     auth,
     upload.single("image"),
     validateServiceData,
-    serviceController.create_newService
+    serviceController.createNewService
 );
 
-router.get("/", serviceController.show_allServices);
+router.get("/", serviceController.showAllServices);
 
 router.patch(
     "/service-id/:id",
     auth,
     upload.single("image"),
     validateID,
-    serviceController.update_serviceById
+    serviceController.updateServiceById
 );
 
 router.delete(
     "/service-id/:id",
     validateID,
-    serviceController.delete_serviceById
+    serviceController.deleteServiceById
 );
 
-router.get("/service-id/:id", validateID, serviceController.search_serviceById);
+router.get("/service-id/:id", validateID, serviceController.getServiceById);
 
-router.get("/search/:search_words", serviceController.advanceSearch);
+// router.get("/search/:search_words", serviceController.searchServices);
+router.get("/search/", serviceController.searchServices);
 
 module.exports = router;
