@@ -1,5 +1,6 @@
 const transportation_services = require("../models/transportation_serveces");
 const { validationResult } = require("express-validator");
+const { paginateLinks } = require("../utils/pagination.js");
 const { fileValidate } = require("../validation/file-validator");
 const cloudinary = require("cloudinary").v2;
 const path = require("path");
@@ -107,35 +108,17 @@ const showAllServices = async (req, res, next) => {
         sort[i] = parseInt(sort[i]);
     }
 
-    // pagination
-    const paginateLinks = (totalDocs) => {
-        if (skip < totalDocs - limit) {
-            return {
-                nextPage: req.baseUrl + "?page=" + parseInt(page + 1),
-                prevPage:
-                    page == 1
-                        ? req.originalUrl
-                        : req.baseUrl + "?page=" + parseInt(page - 1),
-                lastPage:
-                    req.baseUrl + "?page=" + parseInt(totalDocs / limit + 1),
-            };
-        } else {
-            return { prevPage: req.baseUrl + "?page=" + parseInt(page - 1) };
-        }
-    };
-
+    const paginateUrl = req.baseUrl + "?page=";
     try {
-        const totalDocs = await transportation_services.count();
-        const totalPages = parseInt(totalDocs / limit) + 1;
         const data = await transportation_services
             .find(filter)
             .sort(sort)
             .skip(skip)
             .limit(limit);
         return res.status(200).json({
-            meta: { filter, sort, skip, limit, totalPages },
+            meta: { filter, sort, skip, limit },
             data,
-            links: paginateLinks(totalDocs),
+            links: paginateLinks(limit, data.length, page, paginateUrl),
         });
     } catch (error) {
         return res.status(500).json({ Errors: error });
@@ -291,6 +274,7 @@ const searchServices = async (req, res, next) => {
     const limit = 10;
     const page = parseInt(req.query.page) || 1;
     const skip = (page - 1) * limit;
+    const paginateUrl = req.baseUrl + "/search?q=" + searchWords + "&page=";
 
     try {
         const data = await transportation_services.aggregate([
@@ -306,41 +290,10 @@ const searchServices = async (req, res, next) => {
             { $skip: skip },
             { $limit: limit },
         ]);
-
-        // search paginate links
-        const searchPaginateLinks = (limit) => {
-            if (limit === data.length) {
-                return {
-                    nextPage:
-                        req.baseUrl +
-                        "/search?q=" +
-                        searchWords +
-                        "&page=" +
-                        parseInt(page + 1),
-                    prevPage:
-                        page == 1
-                            ? req.originalUrl
-                            : req.baseUrl +
-                              "/search?q=" +
-                              searchWords +
-                              "&page=" +
-                              parseInt(page - 1),
-                };
-            } else {
-                return {
-                    prevPage:
-                        req.baseUrl +
-                        "/search?q=" +
-                        searchWords +
-                        "&page=" +
-                        parseInt(page - 1),
-                };
-            }
-        };
         return res.status(200).json({
             meta: { search: searchWords, limit, skip, page },
             data,
-            links: searchPaginateLinks(limit),
+            links: paginateLinks(limit, data.length, page, paginateUrl),
         });
     } catch (error) {
         return res.status(500).json({ Errors: error });
