@@ -22,22 +22,17 @@ router.post(
 router.get("/", serviceController.showAllServices);
 
 router.patch(
-    "/service-id/:id",
+    "/id/:id",
     auth,
     upload.single("image"),
     validateID,
     serviceController.updateServiceById
 );
 
-router.delete(
-    "/service-id/:id",
-    validateID,
-    serviceController.deleteServiceById
-);
+router.delete("/id/:id", validateID, serviceController.deleteServiceById);
 
-router.get("/service-id/:id", validateID, serviceController.getServiceById);
+router.get("/id/:id", validateID, serviceController.getServiceById);
 
-// router.get("/search/:search_words", serviceController.searchServices);
 router.get("/search/", serviceController.searchServices);
 
 module.exports = router;
