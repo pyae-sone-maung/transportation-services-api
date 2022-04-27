@@ -1,16 +1,16 @@
-const paginateLinks = (limit, items, page, paginateUrl) => {
+const paginateLinks = (req, limit, items, page, paginateUrl) => {
     if (limit === items && page === 1) {
         return {
-            nextPage: paginateUrl + parseInt(page + 1),
+            nextPage: req.headers.host + paginateUrl + parseInt(page + 1),
         };
     } else if (limit === items && page > 1) {
         return {
-            nextPage: paginateUrl + parseInt(page + 1),
-            prevPage: paginateUrl + parseInt(page - 1),
+            nextPage: req.headers.host + paginateUrl + parseInt(page + 1),
+            prevPage: req.headers.host + paginateUrl + parseInt(page - 1),
         };
     } else if (limit != items && page > 1) {
         return {
-            prevPage: paginateUrl + parseInt(page - 1),
+            prevPage: req.headers.host + paginateUrl + parseInt(page - 1),
         };
     }
 };

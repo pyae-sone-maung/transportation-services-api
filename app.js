@@ -6,6 +6,6 @@ const serviceRoutes = require("./src/routes/serviceRoutes");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
-app.use("/api/v1/transportation-services", serviceRoutes);
+app.use("/", serviceRoutes);
 
 module.exports = app;

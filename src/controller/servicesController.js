@@ -118,7 +118,7 @@ const showAllServices = async (req, res, next) => {
         return res.status(200).json({
             meta: { filter, sort, skip, limit },
             data,
-            links: paginateLinks(limit, data.length, page, paginateUrl),
+            links: paginateLinks(req, limit, data.length, page, paginateUrl),
         });
     } catch (error) {
         return res.status(500).json({ Errors: error });
@@ -210,8 +210,6 @@ const updateServiceById = async (req, res, next) => {
                             }
                         );
                     }
-                    const existImageId = result.image.image_id;
-                    await cloudinary.uploader.destroy(existImageId);
                 }
             }
         } catch (error) {
@@ -293,7 +291,7 @@ const searchServices = async (req, res, next) => {
         return res.status(200).json({
             meta: { search: searchWords, limit, skip, page },
             data,
-            links: paginateLinks(limit, data.length, page, paginateUrl),
+            links: paginateLinks(req, limit, data.length, page, paginateUrl),
         });
     } catch (error) {
         return res.status(500).json({ Errors: error });
