@@ -29,7 +29,7 @@ router.patch(
     serviceController.updateServiceById
 );
 
-router.delete("/id/:id", validateID, serviceController.deleteServiceById);
+router.delete("/id/:id", auth, validateID, serviceController.deleteServiceById);
 
 router.get("/id/:id", validateID, serviceController.getServiceById);
 
