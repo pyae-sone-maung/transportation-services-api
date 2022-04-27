@@ -109,6 +109,7 @@ const showAllServices = async (req, res, next) => {
     }
 
     const paginateUrl = req.baseUrl + "?page=";
+    const host = req.headers.host;
     try {
         const data = await transportation_services
             .find(filter)
@@ -118,7 +119,7 @@ const showAllServices = async (req, res, next) => {
         return res.status(200).json({
             meta: { filter, sort, skip, limit },
             data,
-            links: paginateLinks(req, limit, data.length, page, paginateUrl),
+            links: paginateLinks(host, limit, data.length, page, paginateUrl),
         });
     } catch (error) {
         return res.status(500).json({ Errors: error });
@@ -204,7 +205,11 @@ const updateServiceById = async (req, res, next) => {
                                             message: "update successfully",
                                         },
                                         data,
-                                        links: { self: req.originalUrl },
+                                        links: {
+                                            self:
+                                                req.headers.host +
+                                                req.originalUrl,
+                                        },
                                     });
                                 }
                             }
@@ -258,7 +263,10 @@ const getServiceById = async (req, res, next) => {
             } else {
                 return res
                     .status(200)
-                    .json({ data, links: { self: req.originalUrl } });
+                    .json({
+                        data,
+                        links: { self: req.headers.host + req.originalUrl },
+                    });
             }
         } catch (error) {
             return res.status(500).json({ Errors: error });
@@ -273,6 +281,7 @@ const searchServices = async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const skip = (page - 1) * limit;
     const paginateUrl = req.baseUrl + "/search?q=" + searchWords + "&page=";
+    const host = req.headers.host;
 
     try {
         const data = await transportation_services.aggregate([
@@ -291,7 +300,7 @@ const searchServices = async (req, res, next) => {
         return res.status(200).json({
             meta: { search: searchWords, limit, skip, page },
             data,
-            links: paginateLinks(req, limit, data.length, page, paginateUrl),
+            links: paginateLinks(host, limit, data.length, page, paginateUrl),
         });
     } catch (error) {
         return res.status(500).json({ Errors: error });
