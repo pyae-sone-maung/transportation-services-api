@@ -4,13 +4,13 @@ This project is a Backend API that collects data on some of the transportations 
 
 ### Prerequisites
 
--   Install Node.js version 12.22.5
+-   Install [Node.js](https://nodejs.org/en/)
 
 ### Installation
 
 #### Download or Clone the repository
 
--   Run this command on terminal or <a href="https://github.com/pyae-sone-maung/transportation-services-api/archive/refs/heads/main.zip"> Download </a> here
+-   Run this command on terminal or [Download here](https://github.com/pyae-sone-maung/transportation-services-api/archive/refs/heads/main.zip/).
 
 ```
 https://github.com/pyae-sone-maung/transportation-services-api.git
@@ -29,4 +29,4 @@ npm install
 npm run dev
 ```
 
-Navigate to `http://localhost:5000`
+-   Navigate to `http://localhost:5000`
