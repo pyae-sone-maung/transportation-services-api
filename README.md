@@ -10,7 +10,7 @@ This project is a Backend API that collects data on some of the transportations 
 
 #### Download or Clone the repository
 
--   Run this command on terminal or [Download Here] (https://github.com/pyae-sone-maung/transportation-services-api/archive/refs/heads/main.zip)
+-   Run this command on terminal or <a href="https://github.com/pyae-sone-maung/transportation-services-api/archive/refs/heads/main.zip"> Download </a> here
 
 ```
 https://github.com/pyae-sone-maung/transportation-services-api.git
@@ -29,4 +29,4 @@ npm install
 npm run dev
 ```
 
-     Navigate to `http://localhost:5000`
+Navigate to `http://localhost:5000`
