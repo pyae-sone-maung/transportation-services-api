@@ -33,13 +33,18 @@ npm run dev
 
 ### User Guide
 
--   user can request data with filter, page , sort , id and search
--   create , update , delete services are admin controll with jwt authentication
+-   Get request usages
 
-    -   Get request usages
-        -   request data with sort and pagination <br />
-            `http://localhost:5000?sort[name]=1&page=2`
-        -   request data by id <br />
-            `http://localhost:5000/id/<your id>`
-        -   search request <br />
-            `http://localhost:5000/search?q=<enter text you want to search>`
+    -   request data with sort and pagination <br />
+        `http://localhost:5000?sort[name]=1&page=2`
+    -   request data by id <br />
+        `http://localhost:5000/id/<your id>`
+    -   search request <br />
+        `http://localhost:5000/search?q=<enter text you want to search>`
+
+-   Create, update and delete requests are controlled by Admin with JWT authentication.
+
+### Deployed API Link
+
+-   Hosting on Heroku.
+    https://arakan-tg-transportation-api.herokuapp.com/
