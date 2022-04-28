@@ -37,9 +37,9 @@ npm run dev
 -   create , update , delete services are admin controll with jwt authentication
 
     -   Get request usages
-        -   request data with sort and pagination
+        -   request data with sort and pagination <br />
             `http://localhost:5000?sort[name]=1&page=2`
-        -   request data by id
+        -   request data by id <br />
             `http://localhost:5000/id/<your id>`
-        -   search request
+        -   search request <br />
             `http://localhost:5000/search?q=<enter text you want to search>`
