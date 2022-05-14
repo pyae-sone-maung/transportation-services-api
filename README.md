@@ -44,6 +44,41 @@ npm run dev
 
 -   Create, update and delete requests are controlled by Admin with JWT authentication.
 
+ #### Exemplo de retorno válido da API:
+  ```javascript
+  {
+            "_id": "625c3ca6345e370034c80d54",
+            "name": "အန်တီ၀င်း",
+            "service": "အဆင့်မြင့်ခရီးသည် ပို့ဆောင်ရေး",
+            "routes": [
+                "ရန်ကုန်",
+                " တောင်ကုတ်",
+                " ကျောက်ဖြူ",
+                " သံတွဲ(ငပလီ)",
+                " မာန်အောင်",
+                " စစ်တွေ",
+                " ထား၀ယ်",
+                " မြိတ်",
+                " တနင်္သာရီ",
+                " ဘုတ်ပြင်း",
+                " ကော့သောင်း"
+            ],
+            "vehical_type": "Bus",
+            "phone": [
+                "09-894342299",
+                " 09-894342288",
+                " 09-894342211",
+                " 09894342277"
+            ],
+            "address": "အေးရိပ်ငြိမ် အ၀ေးပြေးကား၀င်း",
+            "note": "",
+            "image": {
+                "image_id": "Taungup-City/ywv3v3it6lprh1m0dntx",
+                "image_url": "http://res.cloudinary.com/blackmango/image/upload/v1651683302/Taungup-City/ywv3v3it6lprh1m0dntx.jpg"
+            }
+        }
+  ```
+
 ### Deployed API Link
 
 -   Hosting on Heroku.  <br />
