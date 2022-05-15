@@ -44,7 +44,7 @@ npm run dev
 
 -   Create, update and delete requests are controlled by Admin with JWT authentication.
 
- #### Example of API:
+ #### Example of API Response:
   ```javascript
   {
             "_id": "625eea3641c0501bd76c1248",
